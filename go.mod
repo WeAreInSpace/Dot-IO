@@ -1,3 +1,3 @@
-module github.com/WeAreInSpace/Dot-IO
+module github.com/WeAreInSpace/DotIO
 
 go 1.23.2
