@@ -16,9 +16,6 @@ packet data length + packet id + packet data
 ```` packet writer
 */
 
-/*
-# First struct for make a packet writer
-*/
 type Outgoing struct {
 	Conn net.Conn
 }
