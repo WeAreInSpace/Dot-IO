@@ -16,6 +16,9 @@ packet data length + packet id + packet data
 ```` packet reader
 */
 
+/*
+# First struct for make a packet reader
+*/
 type Inbound struct {
 	Conn net.Conn
 }
@@ -71,6 +74,25 @@ func (ib *InboundBuffer) ReadInt32() int32 {
 	return number
 }
 
+// 4
+func (ib *InboundBuffer) ReadFloat32() float32 {
+	tempPacket := new(bytes.Buffer)
+
+	var i int8
+	for {
+		if i == 4 {
+			break
+		}
+		data, _ := ib.buffer.ReadByte()
+		tempPacket.WriteByte(data)
+		i += 1
+	}
+
+	var number float32
+	binary.Read(tempPacket, binary.BigEndian, &number)
+	return number
+}
+
 func ReadInt32(rawNumber []byte) int32 {
 	tempByte := new(bytes.Buffer)
 	tempByte.Write(rawNumber)
@@ -95,6 +117,25 @@ func (ib *InboundBuffer) ReadInt64() int64 {
 	}
 
 	var number int64
+	binary.Read(tempPacket, binary.BigEndian, &number)
+	return number
+}
+
+// 4
+func (ib *InboundBuffer) ReadFloat64() float64 {
+	tempPacket := new(bytes.Buffer)
+
+	var i int8
+	for {
+		if i == 8 {
+			break
+		}
+		data, _ := ib.buffer.ReadByte()
+		tempPacket.WriteByte(data)
+		i += 1
+	}
+
+	var number float64
 	binary.Read(tempPacket, binary.BigEndian, &number)
 	return number
 }

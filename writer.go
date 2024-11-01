@@ -16,6 +16,9 @@ packet data length + packet id + packet data
 ```` packet writer
 */
 
+/*
+# First struct for make a packet writer
+*/
 type Outgoing struct {
 	Conn net.Conn
 }
@@ -71,8 +74,18 @@ func WriteInt32(number int32) []byte {
 	return tempByte.Bytes()
 }
 
+// 4
+func (og *OutgoingBuffer) WriteFloat32(number float32) {
+	binary.Write(og.buffer, binary.BigEndian, number)
+}
+
 // 8
 func (og *OutgoingBuffer) WriteInt64(number int64) {
+	binary.Write(og.buffer, binary.BigEndian, number)
+}
+
+// 8
+func (og *OutgoingBuffer) WriteFloat64(number float64) {
 	binary.Write(og.buffer, binary.BigEndian, number)
 }
 
