@@ -8,12 +8,8 @@ import (
 )
 
 /*
-Dot IO Packet format
+Dot I/O Packet format
 packet data length + packet id + packet data
-*/
-
-/*
-```` packet writer
 */
 
 type Outgoing struct {
@@ -32,29 +28,6 @@ type OutgoingBuffer struct {
 	conn   net.Conn
 	buffer *bytes.Buffer
 	packet *bytes.Buffer
-}
-
-func (og *OutgoingBuffer) Sent(id []byte) error {
-	og.packet.Write(id)
-	for _, buffer := range og.buffer.Bytes() {
-		og.packet.WriteByte(buffer)
-	}
-
-	packetLength := WriteInt32(int32(og.packet.Len()))
-
-	_, writePacketLenE := og.conn.Write(packetLength)
-	if writePacketLenE != nil {
-		log.Printf("ERROR: %s\n", writePacketLenE)
-		return writePacketLenE
-	}
-
-	_, writePacketDataE := og.conn.Write(og.packet.Bytes())
-	if writePacketDataE != nil {
-		log.Printf("ERROR: %s\n", writePacketDataE)
-		return writePacketDataE
-	}
-
-	return nil
 }
 
 // 4
@@ -101,4 +74,27 @@ func (og *OutgoingBuffer) WriteBoolean(boolean bool) {
 	} else {
 		binary.Write(og.buffer, binary.BigEndian, int8(0))
 	}
+}
+
+func (og *OutgoingBuffer) Sent(id []byte) error {
+	og.packet.Write(id)
+	for _, buffer := range og.buffer.Bytes() {
+		og.packet.WriteByte(buffer)
+	}
+
+	packetLength := WriteInt32(int32(og.packet.Len()))
+
+	_, writePacketLenE := og.conn.Write(packetLength)
+	if writePacketLenE != nil {
+		log.Printf("ERROR: %s\n", writePacketLenE)
+		return writePacketLenE
+	}
+
+	_, writePacketDataE := og.conn.Write(og.packet.Bytes())
+	if writePacketDataE != nil {
+		log.Printf("ERROR: %s\n", writePacketDataE)
+		return writePacketDataE
+	}
+
+	return nil
 }

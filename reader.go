@@ -8,17 +8,10 @@ import (
 )
 
 /*
-Dot IO Packet format
+Dot I/O Packet format
 packet data length + packet id + packet data
 */
 
-/*
-```` packet reader
-*/
-
-/*
-# First struct for make a packet reader
-*/
 type Inbound struct {
 	Conn net.Conn
 }
