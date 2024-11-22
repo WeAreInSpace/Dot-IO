@@ -1,4 +1,4 @@
-package dotio
+package packet
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ packet data length + packet id + packet data
 */
 
 type Outgoing struct {
-	Conn net.Conn
+	Conn *net.TCPConn
 }
 
 func (og *Outgoing) Write() OutgoingBuffer {
@@ -25,7 +25,7 @@ func (og *Outgoing) Write() OutgoingBuffer {
 }
 
 type OutgoingBuffer struct {
-	conn   net.Conn
+	conn   *net.TCPConn
 	buffer *bytes.Buffer
 	packet *bytes.Buffer
 }
@@ -61,10 +61,18 @@ func (og *OutgoingBuffer) WriteFloat64(number float64) {
 
 // length
 func (og *OutgoingBuffer) WriteString(str string) {
-	stringLength := WriteInt32(int32(len(str)))
+	length := WriteInt32(int32(len(str)))
 
-	og.buffer.Write(stringLength)
+	og.buffer.Write(length)
 	og.buffer.Write([]byte(str))
+}
+
+// length
+func (og *OutgoingBuffer) WriteByteArray(bytesArray *bytes.Buffer) {
+	length := WriteInt32(int32(bytesArray.Len()))
+
+	og.buffer.Write(length)
+	og.buffer.ReadFrom(bytesArray)
 }
 
 // 1
@@ -84,16 +92,16 @@ func (og *OutgoingBuffer) Sent(id []byte) error {
 
 	packetLength := WriteInt32(int32(og.packet.Len()))
 
-	_, writePacketLenE := og.conn.Write(packetLength)
-	if writePacketLenE != nil {
-		log.Printf("ERROR: %s\n", writePacketLenE)
-		return writePacketLenE
+	_, err := og.conn.Write(packetLength)
+	if err != nil {
+		log.Printf("ERROR: %s\n", err)
+		return err
 	}
 
-	_, writePacketDataE := og.conn.Write(og.packet.Bytes())
-	if writePacketDataE != nil {
-		log.Printf("ERROR: %s\n", writePacketDataE)
-		return writePacketDataE
+	_, err = og.conn.Write(og.packet.Bytes())
+	if err != nil {
+		log.Printf("ERROR: %s\n", err)
+		return err
 	}
 
 	return nil
