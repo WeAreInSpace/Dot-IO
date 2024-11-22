@@ -17,13 +17,13 @@ type ApplicationSettings struct {
 	Wg *sync.WaitGroup
 }
 
-func New(settings *ApplicationSettings) *application {
+func New(settings *ApplicationSettings) *Application {
 	if settings == nil {
 		mx := new(sync.Mutex)
 		wg := new(sync.WaitGroup)
 
 		settings = &ApplicationSettings{
-			Name:    "Dot I/O application",
+			Name:    "Dot I/O Application",
 			Address: ":25010",
 
 			Mx: mx,
@@ -32,7 +32,7 @@ func New(settings *ApplicationSettings) *application {
 	}
 
 	if settings.Name == "" {
-		settings.Name = "Dot I/O application"
+		settings.Name = "Dot I/O Application"
 	}
 
 	if settings.Address == "" {
@@ -65,7 +65,7 @@ func New(settings *ApplicationSettings) *application {
 	device := make(map[net.Addr]*device)
 	route := make(map[[2]string]*route)
 
-	return &application{
+	return &Application{
 		listener: listener,
 
 		mx: settings.Mx,
@@ -76,7 +76,7 @@ func New(settings *ApplicationSettings) *application {
 	}
 }
 
-type application struct {
+type Application struct {
 	listener *net.TCPListener
 
 	mx *sync.Mutex
@@ -94,7 +94,7 @@ type device struct {
 	og *packet.Outgoing
 }
 
-func (a *application) Listen() {
+func (a *Application) Listen() {
 	defer a.wg.Done()
 
 	go a.connectionHanler()
@@ -103,7 +103,7 @@ func (a *application) Listen() {
 	a.wg.Wait()
 }
 
-func (a *application) connectionHanler() {
+func (a *Application) connectionHanler() {
 	defer a.listener.Close()
 
 	for {
@@ -116,7 +116,7 @@ func (a *application) connectionHanler() {
 	}
 }
 
-func (a *application) deviceHanler(conn *net.TCPConn) {
+func (a *Application) deviceHanler(conn *net.TCPConn) {
 	if _, exits := a.devices[conn.RemoteAddr()]; !exits {
 		addr := conn.RemoteAddr()
 		ib := packet.Inbound{
@@ -142,7 +142,7 @@ func (a *application) deviceHanler(conn *net.TCPConn) {
 	}
 }
 
-func (a *application) load(addr net.Addr) {
+func (a *Application) load(addr net.Addr) {
 	device := a.devices[addr]
 
 	for {
@@ -178,7 +178,7 @@ func (a *application) load(addr net.Addr) {
 	}
 }
 
-func (a *application) deleteDevice(addr net.Addr) {
+func (a *Application) deleteDevice(addr net.Addr) {
 	delete(a.devices, addr)
 	log.Printf("Device: %v\n", a.devices)
 }
@@ -188,7 +188,7 @@ type route struct {
 	callback func(ib *packet.Inbound, og *packet.Outgoing) error
 }
 
-func (a *application) Post(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) {
+func (a *Application) Post(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) {
 	method := "post"
 	fmt.Printf("Register: method '%s' at '%s'\n", method, path)
 
@@ -205,7 +205,7 @@ func (a *application) Post(path string, callback func(ib *packet.Inbound, og *pa
 	a.routes[[2]string{method, path}] = newRoute
 }
 
-func (a *application) Put(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) {
+func (a *Application) Put(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) {
 	method := "put"
 	fmt.Printf("Register: method '%s' at '%s'\n", method, path)
 
