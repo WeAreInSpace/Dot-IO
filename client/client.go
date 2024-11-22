@@ -16,12 +16,12 @@ type ApplicationSettings struct {
 	Mx *sync.Mutex
 }
 
-func New(settings *ApplicationSettings) *application {
+func New(settings *ApplicationSettings) *Application {
 	if settings == nil {
 		mx := new(sync.Mutex)
 
 		settings = &ApplicationSettings{
-			Name:    "Dot I/O application",
+			Name:    "Dot I/O Application",
 			Address: ":25010",
 
 			Mx: mx,
@@ -29,7 +29,7 @@ func New(settings *ApplicationSettings) *application {
 	}
 
 	if settings.Name == "" {
-		settings.Name = "Dot I/O application"
+		settings.Name = "Dot I/O Application"
 	}
 
 	if settings.Address == "" {
@@ -59,7 +59,7 @@ func New(settings *ApplicationSettings) *application {
 		Conn: conn,
 	}
 
-	return &application{
+	return &Application{
 		mx: settings.Mx,
 
 		ib: ib,
@@ -67,14 +67,14 @@ func New(settings *ApplicationSettings) *application {
 	}
 }
 
-type application struct {
+type Application struct {
 	mx *sync.Mutex
 
 	ib *packet.Inbound
 	og *packet.Outgoing
 }
 
-func (a *application) Post(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) int32 {
+func (a *Application) Post(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) int32 {
 	method := "post"
 
 	firstPkBuf := a.og.Write()
@@ -95,7 +95,7 @@ func (a *application) Post(path string, callback func(ib *packet.Inbound, og *pa
 	return statusRes
 }
 
-func (a *application) Put(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) int32 {
+func (a *Application) Put(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) int32 {
 	method := "put"
 
 	firstPkBuf := a.og.Write()
