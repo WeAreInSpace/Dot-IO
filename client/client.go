@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"log"
+	"math"
 	"net"
 	"sync"
 
@@ -77,6 +78,9 @@ type Application struct {
 func (a *Application) Post(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) int32 {
 	method := "post"
 
+	reqConnPkBuf := a.og.Write()
+	reqConnPkBuf.Sent(packet.WriteInt32(math.MaxInt32))
+
 	firstPkBuf := a.og.Write()
 	firstPkBuf.WriteString(method)
 	firstPkBuf.WriteString(path)
@@ -97,6 +101,9 @@ func (a *Application) Post(path string, callback func(ib *packet.Inbound, og *pa
 
 func (a *Application) Put(path string, callback func(ib *packet.Inbound, og *packet.Outgoing) error) int32 {
 	method := "put"
+
+	reqConnPkBuf := a.og.Write()
+	reqConnPkBuf.Sent(packet.WriteInt32(math.MaxInt32))
 
 	firstPkBuf := a.og.Write()
 	firstPkBuf.WriteString(method)

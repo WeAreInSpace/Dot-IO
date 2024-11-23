@@ -3,6 +3,7 @@ package dotio
 import (
 	"fmt"
 	"log"
+	"math"
 	"net"
 	"sync"
 
@@ -146,35 +147,46 @@ func (a *Application) load(addr net.Addr) {
 	device := a.devices[addr]
 
 	for {
-		id, firstPkBuf, err := device.ib.Read()
+		reqConnPkBufId, _, err := device.ib.Read()
 		if err != nil {
 			log.Printf("ERROR: %s", err)
 			break
 		}
-
-		if id == 0 {
-			method := firstPkBuf.ReadString()
-			path := firstPkBuf.ReadString()
-
-			log.Printf("Requst from: %s to: %s method: %s\n", addr.String(), path, method)
-
-			route, exits := a.routes[[2]string{method, path}]
-			if exits {
-				err := route.callback(device.ib, device.og)
-				if err != nil {
-					log.Printf("ERROR: %s", err)
-					break
-				}
-
-				res := device.og.Write()
-				res.Sent(packet.WriteInt32(0))
-			} else {
-				log.Printf("ERROR: Function '%s' at '%s' does not exits\n", method, path)
-				res := device.og.Write()
-				res.Sent(packet.WriteInt32(1))
-			}
-			break
+		if reqConnPkBufId != math.MaxInt32 {
+			continue
 		}
+
+		go func() {
+			id, firstPkBuf, err := device.ib.Read()
+			if err != nil {
+				log.Printf("ERROR: %s", err)
+				return
+			}
+
+			if id == 0 {
+				method := firstPkBuf.ReadString()
+				path := firstPkBuf.ReadString()
+
+				log.Printf("Requst from: %s to: %s method: %s\n", addr.String(), path, method)
+
+				route, exits := a.routes[[2]string{method, path}]
+				if exits {
+					err := route.callback(device.ib, device.og)
+					if err != nil {
+						log.Printf("ERROR: %s", err)
+						return
+					}
+
+					res := device.og.Write()
+					res.Sent(packet.WriteInt32(0))
+				} else {
+					log.Printf("ERROR: Function '%s' at '%s' does not exits\n", method, path)
+					res := device.og.Write()
+					res.Sent(packet.WriteInt32(1))
+				}
+				return
+			}
+		}()
 	}
 }
 
